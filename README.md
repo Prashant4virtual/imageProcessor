@@ -12,6 +12,9 @@
 - **Node**
     - Run 'npm install' in root folder to install all packages listed in package.json
 
+## Endpoints
+- Accessible over http://localhost:3124/
+
 ## Commands/scripts
 
 ## To retrieve an image:
