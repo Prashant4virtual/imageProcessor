@@ -16,7 +16,9 @@
 - Accessible over http://localhost:3124/
 
 ## Commands/scripts
-  npm run 
+  npm start
+
+  dev scripts: 
     "build": "npx tsc",
     "prettier": "prettier --config .prettierrc build/**/*.js --write",
     "lint": "eslint . --ext .js",
