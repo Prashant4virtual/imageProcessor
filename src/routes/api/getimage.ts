@@ -10,9 +10,9 @@ const imageExt = '.jpg'
 get_image.get('/:image',(req,res) => {
     const imageName =  req.params.image;
     const imagePath = path.join(imageRoot,`${imageName+imageExt}`);
-    console.log(imagePath);
+    // console.log(imagePath);
     if(fs.existsSync(imagePath)){
-        console.log(`${imageName} image queried`);
+        // console.log(`${imageName} image queried`);
         res.sendFile(imagePath);
     }
     else{
@@ -35,39 +35,33 @@ get_image.get('/',(req,res) => {
                 await fs.promises.mkdir(thumbroot)
             }
             createDir();
-            // fs.mkdir(thumbroot,(err) => {
-            //     console.log("Failed to create thumbnails directory");
-            //     throw err;
-            // })
         }
         const filethumbpath = path.join(thumbroot,`${filename+'_thumb'+imageExt}`);
 
         function updateMeta(infoData: object){
-            // const thumbMetaFile = path.join(thumbroot,'meta.json');
             if(!fs.existsSync(thumbMetaFile)){
                 fs.writeFile(thumbMetaFile,JSON.stringify({}),'utf-8',(err)=>{
                     if (err){
-                        console.log("Failed to create thumbs meta file")
+                        throw err;
+                        // console.log("Failed to create thumbs meta file")
                     }
                 })
             }
-                let readData ;
-                fs.readFile(thumbMetaFile,(err,data)=>{
-                    if(err)  throw err;
-                    readData = data as unknown as string;
+            let readData ;
+            fs.readFile(thumbMetaFile,(err,data)=>{
+                if(err)  throw err;
+                readData = data as unknown as string;
                 const datajsonified = JSON.parse(readData);
-                // if(!datajsonified[filename]){
-                    datajsonified[filename] = infoData;
-                    // console.log(datajsonified)
-                    fs.writeFile(thumbMetaFile,JSON.stringify(datajsonified),'utf-8',(err)=>{
+                datajsonified[filename] = infoData;
+                fs.writeFile(thumbMetaFile,JSON.stringify(datajsonified),'utf-8',(err)=>{
                     if (err){
-                        console.log("Failed to update thumbs meta file");
-                    } else {
-                        console.log(`Updated thumbs meta data for image ${filename}`);
-                        console.log(datajsonified);
+                        throw err;
+                        // console.log("Failed to update thumbs meta file");
+                        // } else {
+                    //     console.log(`Updated thumbs meta data for image ${filename}`);
+                    //     console.log(datajsonified);
                     }
                 })
-                // };
             });
         }
 
@@ -76,13 +70,11 @@ get_image.get('/',(req,res) => {
                 .resize(width,height)
                 .toFile(filethumbpath,(err,info)=>{
                     if(err){ 
-                        console.log(err);
-                        res.send('Failed to resize image!');
+                        // console.log(err);
+                        res.status(400).send('Failed to resize image!');
                     } else{
-                        // console.log('Resized image and updated meta for ');
-                        // console.log(info);
                         updateMeta(info);
-                        res.sendFile(filethumbpath);
+                        res.status(200).sendFile(filethumbpath);
                     }
                 });
         }
@@ -93,7 +85,7 @@ get_image.get('/',(req,res) => {
                     readData = data as unknown as string;
                 const datajsonified = JSON.parse(readData);
                 if( datajsonified[filename] && datajsonified[filename]['height'] === height && datajsonified[filename]['height'] === height){
-                    console.log(`Serving image ${filename} from cache`)
+                    // console.log(`Serving image ${filename} from cache`)
                     res.sendFile(filethumbpath);
                 }
                 else{

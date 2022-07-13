@@ -16,9 +16,14 @@
 - Accessible over http://localhost:3124/
 
 ## Commands/scripts
+  npm run 
+    "build": "npx tsc",
+    "prettier": "prettier --config .prettierrc build/**/*.js --write",
+    "lint": "eslint . --ext .js",
+    "test": "npm run build && npx jasmine"
 
 ## To retrieve an image:
   - /image/image_name -> If it's a valid image Name, returns image or else returns message "Image image_name not found !" with return status of 400.
 
 ## To process image:
-  - Yet to be implemented.
+  - /image?filename=name&width=size&height=size -> returns the processed image if not it's not in cache or else serves the cached image.
