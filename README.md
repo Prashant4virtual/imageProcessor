@@ -16,13 +16,13 @@
 - Accessible over http://localhost:3124/
 
 ## Commands/scripts
-  npm start
+  - npm start
 
-  dev scripts: 
-    "build": "npx tsc",
-    "prettier": "prettier --config .prettierrc build/**/*.js --write",
-    "lint": "eslint . --ext .js",
-    "test": "npm run build && npx jasmine"
+  - dev scripts: 
+    - "build": "npx tsc",
+    - "prettier": "prettier --config .prettierrc build/**/*.js --write",
+    - "lint": "eslint . --ext .js",
+    - "test": "npm run build && npx jasmine"
 
 ## To retrieve an image:
   - /image/image_name -> If it's a valid image Name, returns image or else returns message "Image image_name not found !" with return status of 400.
