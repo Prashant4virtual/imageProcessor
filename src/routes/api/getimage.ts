@@ -35,6 +35,8 @@ get_image.get('/', async (req: express.Request, res: express.Response) => {
       }, 200);
     } else res.status(500).send('Oops something went wrong!');
     // })
+  } else {
+    res.status(400).send('Query data not valid');
   }
 });
 

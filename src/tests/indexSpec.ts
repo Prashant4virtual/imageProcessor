@@ -34,6 +34,17 @@ describe('Image Processor responses', () => {
       );
       expect(response.status).toBe(400);
     });
+    it('fails to get the resized image for incorrect width or height(width and height to be positive integer)', async () => {
+      const response = await request.get(
+        '/image?filename=fjord&width=-1&height=100'
+      );
+      expect(response.status).toBe(400);
+    });
+    it('checks if the image is served from cache', async () => {
+      const response = await transform('santamonica', 200, 100);
+      //Above test "gets the resized image from the api endpoint" in this suite already has generated this image.
+      expect(response.inCache).toBeTruthy();
+    });
   });
   describe('Image processing function', () => {
     it('checks if the image transform function is operational', async () => {

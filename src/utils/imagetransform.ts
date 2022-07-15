@@ -19,17 +19,16 @@ const transform = async (fileName: string, width: number, height: number) => {
     file: '',
     inCache: false,
   };
-
   if (!(fs.existsSync(filePath) && width > 0 && height > 0)) {
     outData.err = true;
     outData.errMsg = 'Query data not valid';
   }
 
-  if (!fs.existsSync(thumbroot)) {
+  if (!fs.existsSync(thumbroot) && !outData.err) {
     fs.mkdir(thumbroot, () => {});
   }
 
-  if (fs.existsSync(thumbMetaFile)) {
+  if (fs.existsSync(thumbMetaFile) && !outData.err) {
     let readData;
     readData = fs.readFileSync(thumbMetaFile);
     // fs.readFile(thumbMetaFile,(err,data)=>{
@@ -38,7 +37,7 @@ const transform = async (fileName: string, width: number, height: number) => {
     const datajsonified = JSON.parse(readData);
     if (
       datajsonified[fileName] &&
-      datajsonified[fileName]['height'] === height &&
+      datajsonified[fileName]['width'] === width &&
       datajsonified[fileName]['height'] === height
     ) {
       outData.inCache = true;
@@ -48,7 +47,7 @@ const transform = async (fileName: string, width: number, height: number) => {
   // })
   // }
   try {
-    if (!outData.inCache) {
+    if (!outData.inCache && !outData.err) {
       sharp(filePath)
         .resize(width, height)
         .toFile(thumbFilePath, (err, info) => {
@@ -73,7 +72,9 @@ const transform = async (fileName: string, width: number, height: number) => {
               thumbMetaFile,
               JSON.stringify(datajsonified),
               'utf-8',
-              (err) => {}
+              (err) => {
+                outData.err = true;
+              }
             );
           }
         });
