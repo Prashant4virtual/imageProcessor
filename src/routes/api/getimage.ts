@@ -1,105 +1,41 @@
 import express, { query } from 'express';
-import path from 'path';
-import fs from 'fs';
-import sharp from 'sharp';
+import * as imageUtil from '../../utils/imageUtil';
+import transform from '../../utils/imagetransform';
 
 const get_image = express.Router();
-const imageRoot = path.join(__dirname,'..','..','..','images');
-const imageExt = '.jpg'
 
-get_image.get('/:image',(req,res) => {
-    const imageName =  req.params.image;
-    const imagePath = path.join(imageRoot,`${imageName+imageExt}`);
-    // console.log(imagePath);
-    if(fs.existsSync(imagePath)){
-        // console.log(`${imageName} image queried`);
-        res.sendFile(imagePath);
-    }
-    else{
-        res.status(404).send(`Image ${imageName} not found !`)
-    }
+get_image.get('/:image', (req: express.Request, res: express.Response) => {
+  const imageName = req.params.image;
+  const imagePath = imageUtil.absPath(imageUtil.imageRoot, imageName);
+  if (imageUtil.objectExists(imagePath)) {
+    // console.log(`${imageName} image queried`);
+    res.sendFile(imagePath);
+  } else {
+    res.status(404).send(`Image ${imageName} not found !`);
+  }
 });
 
-get_image.get('/',(req,res) => {
-    const queryParams = req.query
-    if (queryParams.filename && queryParams.width && queryParams.height){
-        const filename = queryParams.filename as string; 
-        const width = queryParams.width as unknown as number;
-        const height = queryParams.height as unknown as number;
-        const filepath =  path.join(imageRoot,`${filename+imageExt}`);
-        const thumbroot = path.join(imageRoot,'.thumbnails');
-        const thumbMetaFile = path.join(thumbroot,'meta.json');
+get_image.get('/', async (req: express.Request, res: express.Response) => {
+  const queryParams = req.query;
+  if (queryParams.filename && queryParams.width && queryParams.height) {
+    const filename = queryParams.filename as string;
+    const width = queryParams.width as unknown as number;
+    const height = queryParams.height as unknown as number;
 
-        if(!fs.existsSync(thumbroot)){
-            async function createDir(){
-                await fs.promises.mkdir(thumbroot)
-            }
-            createDir();
-        }
-        const filethumbpath = path.join(thumbroot,`${filename+'_thumb'+imageExt}`);
-
-        function updateMeta(infoData: object){
-            if(!fs.existsSync(thumbMetaFile)){
-                fs.writeFile(thumbMetaFile,JSON.stringify({}),'utf-8',(err)=>{
-                    if (err){
-                        throw err;
-                        // console.log("Failed to create thumbs meta file")
-                    }
-                })
-            }
-            let readData ;
-            fs.readFile(thumbMetaFile,(err,data)=>{
-                if(err)  throw err;
-                readData = data as unknown as string;
-                const datajsonified = JSON.parse(readData);
-                datajsonified[filename] = infoData;
-                fs.writeFile(thumbMetaFile,JSON.stringify(datajsonified),'utf-8',(err)=>{
-                    if (err){
-                        throw err;
-                        // console.log("Failed to update thumbs meta file");
-                        // } else {
-                    //     console.log(`Updated thumbs meta data for image ${filename}`);
-                    //     console.log(datajsonified);
-                    }
-                })
-            });
-        }
-
-        function resizeImage(){
-            sharp(filepath)
-                .resize(width,height)
-                .toFile(filethumbpath,(err,info)=>{
-                    if(err){ 
-                        // console.log(err);
-                        res.status(400).send('Failed to resize image!');
-                    } else{
-                        updateMeta(info);
-                        res.status(200).sendFile(filethumbpath);
-                    }
-                });
-        }
-        if(fs.existsSync(thumbMetaFile)){
-            let readData ;
-                fs.readFile(thumbMetaFile,(err,data)=>{
-                    if(err)  throw err;
-                    readData = data as unknown as string;
-                const datajsonified = JSON.parse(readData);
-                if( datajsonified[filename] && datajsonified[filename]['height'] === height && datajsonified[filename]['height'] === height){
-                    // console.log(`Serving image ${filename} from cache`)
-                    res.sendFile(filethumbpath);
-                }
-                else{
-                    resizeImage();
-                }
-            });
-        }
-        else {
-            resizeImage();
-        }
-    }
-    else {
-        res.status(400).send('Image params in the query incorrect!')
-    }
+    const result = await transform(filename, width, height); //.then((result)=>{
+    // console.log("transform then data:",result)
+    if (
+      result.errMsg === 'Query data not valid' ||
+      result.errMsg === 'Failed to transform'
+    ) {
+      res.status(400).send(result.errMsg);
+    } else if (result !== undefined) {
+      setTimeout(() => {
+        res.status(200).sendFile(result.file);
+      }, 200);
+    } else res.status(500).send('Oops something went wrong!');
+    // })
+  }
 });
 
 export default get_image;

@@ -1,8 +1,16 @@
 {
     "parserOptions": {
-        "ecmaVersion": 2016
+        "ecmaVersion": 2016,
+        "sourceType": "module",
+        "ecmaFeatures": {
+            "experimentalObjectRestSpread": true
+          }
     },
-
+    "parser": "@typescript-eslint/parser",
+    "plugins": ["@typescript-eslint"],
+    "rules": {
+    //   "@typescript-eslint/rule-name": "error"
+    },
     "env": {
         "es6": true
     }
